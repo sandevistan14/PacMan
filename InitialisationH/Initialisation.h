@@ -25,7 +25,7 @@ std::map <std::string, std::vector <std::string>> initSpriteMap (const std::stri
  * @param[in] tick : Compteur de frame
  * @fn nsGui::Sprite initSprite (Entity & Entity, CMat & entityGrid, unsigned short & tick);
  */
-nsGui::Sprite initSprite (Entity & Entity, CMat & entityGrid, unsigned short & tick);
+nsGui::Sprite initSprite (Entity & Entity, CMat & entityGrid, unsigned short & tick, int & tick2);
 
 /**
  * @brief Initialise la matrice et les positions ou se trouve les entités et les obstacles.

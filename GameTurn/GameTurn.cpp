@@ -7,7 +7,6 @@
  *
 **/
 
-
 #define FPS_LIMIT 120
 #include <iostream>
 #include <thread>
@@ -180,21 +179,25 @@ void GameTurn(){
 
                 if (PacMan.Pos == RedGhost.Pos){
                     score += 100;
+                    this_thread::sleep_for(chrono::milliseconds(100000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
                     RedGhost.Pos.first = 13;
                     RedGhost.Pos.second = 11;
                 }
                 if( PacMan.Pos == PinkGhost.Pos){
                     score += 200;
+                    this_thread::sleep_for(chrono::milliseconds(100000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
                     PinkGhost.Pos.first = 13;
                     PinkGhost.Pos.second = 11;
                 }
                 if(PacMan.Pos == BlueGhost.Pos){
                     score += 200;
+                    this_thread::sleep_for(chrono::milliseconds(100000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
                     BlueGhost.Pos.first = 13;
                     BlueGhost.Pos.second = 11;
                 }
                 if (PacMan.Pos == OrangeGhost.Pos){
                     score += 200;
+                    this_thread::sleep_for(chrono::milliseconds(100000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
                     OrangeGhost.Pos.first = 13;
                     OrangeGhost.Pos.second = 11;
                 }
@@ -211,11 +214,11 @@ void GameTurn(){
                 GhostMovement(entityGrid,PinkGhost, tick);
             }
 
-            window << initSprite(PacMan, entityGrid, tick);
-            window << initSprite(RedGhost, entityGrid, tick);
-            window << initSprite(BlueGhost, entityGrid, tick);
-            window << initSprite(OrangeGhost, entityGrid, tick);
-            window << initSprite(PinkGhost, entityGrid, tick);
+            window << initSprite(PacMan, entityGrid, tick, tick2);
+            window << initSprite(RedGhost, entityGrid, tick, tick2);
+            window << initSprite(BlueGhost, entityGrid, tick, tick2);
+            window << initSprite(OrangeGhost, entityGrid, tick, tick2);
+            window << initSprite(PinkGhost, entityGrid, tick, tick2);
 
             affichageScore(window, score);
             affichageVies(PacMan.SpriteMap, window, vies);
@@ -237,7 +240,7 @@ void GameTurn(){
         window.getEventManager().clearEvents();
 
         // On attend un peu pour limiter le framerate et soulager le CPU
-        this_thread::sleep_for(chrono::milliseconds(1000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
+        this_thread::sleep_for(chrono::milliseconds(10000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
 
         // On récupère le temps de frame
         frameTime = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start);
