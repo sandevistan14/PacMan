@@ -24,16 +24,16 @@
 #include "InitialisationH/Initialisation.h"
 #include "MovementH/Movement.h"
 #include "mingl/audio/audioengine.h"
-
+#include "GameTurnH/InitGameTurn.h"
 
 using namespace std;
 
 
 void GameTurn(){
 
-    unsigned score = 0;
-    unsigned niveau = 1;
-    unsigned vies = 3;
+    unsigned score = 0;  // init score
+    unsigned niveau = 1; // init niveau
+    unsigned vies = 3;   //init vies
 
     MinGL window("PAC-MAN", nsGraphics::Vec2D(672, 790), nsGraphics::Vec2D(120, 120), nsGraphics::KBlack);
     window.initGlut();
@@ -51,48 +51,60 @@ void GameTurn(){
     // Variable qui tient le temps de frame
     chrono::microseconds frameTime = chrono::microseconds::zero();
 
+//*****************************************************************************
+//**************************     Init maze     ********************************
+//*****************************************************************************
+
+    pair <CMat, map<char, CPos>> gridInfo = initEntityMaze("../sae102/res/mazeinitialmap");
+    CMat entityGrid = gridInfo.first;
+    map<char, CPos> posMap = gridInfo.second;
+    CMat gumGrid = initGumMaze("../sae102/res/guminitialmap");
+    nsGui::Sprite maze("../sae102/res/sprites/maze0.si2", nsGraphics::Vec2D(0,0));
+
+
+//*****************************************************************************
+//****************************     Init entity     ****************************
+//*****************************************************************************
     Entity PacMan;
     Entity RedGhost;
     Entity OrangeGhost;
     Entity PinkGhost;
     Entity BlueGhost;
 
-    bool peutmanger = false;
+    InitPacMan(PacMan);             //init param pacman
+    InitRedGhost(RedGhost);         //init param RedGhost
+    InitOrangeGhost(OrangeGhost);   //init param OrangeGhost
+    InitPinkGhost(PinkGhost);       //init param PinkGhost
+    InitBlueGhost(BlueGhost);       //init param BlueGhost
 
-    PacMan.viewdirection = "Left";
-    PacMan.ident = 'P';
-    PacMan.SpriteMap = initSpriteMap("../sae102/res/sprites/pacman/spriteMap");
-    RedGhost.state = "Flee";
-    RedGhost.viewdirection = "Left";
-    RedGhost.ident = 'R';
-    RedGhost.SpriteMap = initSpriteMap("../sae102/res/sprites/redghost/spriteMap");
-    OrangeGhost.state = "Flee";
-    OrangeGhost.viewdirection = "Top";
-    OrangeGhost.ident = 'O';
-    OrangeGhost.SpriteMap = initSpriteMap("../sae102/res/sprites/orangeghost/spriteMap");
-    PinkGhost.state = "Flee";
-    PinkGhost.viewdirection = "Bottom";
-    PinkGhost.ident = 'K';
-    PinkGhost.SpriteMap = initSpriteMap("../sae102/res/sprites/pinkghost/spriteMap");
-    BlueGhost.state = "Flee";
-    BlueGhost.viewdirection = "Bottom";
-    BlueGhost.ident = 'B';
-    BlueGhost.SpriteMap = initSpriteMap("../sae102/res/sprites/blueghost/spriteMap");
-    bool WinRound = false;
-    bool Dead = false;
-    pair <CMat, map<char, CPos>> gridInfo = initEntityMaze("../sae102/res/mazeinitialmap");
-    CMat entityGrid = gridInfo.first;
-    map<char, CPos> posMap = gridInfo.second;
-    CMat gumGrid = initGumMaze("../sae102/res/guminitialmap");
-    int tick2 = 0;
-    unsigned dieTickAnimation = 0;
     PacMan.Pos = posMap[PacMan.ident];
     RedGhost.Pos = posMap[RedGhost.ident];
     OrangeGhost.Pos = posMap[OrangeGhost.ident];
     PinkGhost.Pos = posMap[PinkGhost.ident];
     BlueGhost.Pos = posMap[BlueGhost.ident];
+
+//*****************************************************************************
+//***************************     Autre Variable     **************************
+//*****************************************************************************
+    // init bool
+    bool peutmanger = false;
+    bool WinRound = false;
+    bool Dead = false;
+
+    // init int
+    int tick2 = 0;
+
+    // init unsigned
+    unsigned dieTickAnimation = 0;
+    unsigned NbGum;
+
+    // init vector
     vector<bool> phase = {false,false,false,false,false,false,false};
-    nsGui::Sprite maze("../sae102/res/sprites/maze0.si2", nsGraphics::Vec2D(0,0));
+
+
+//*****************************************************************************
+//************************     Boucle de jeux     *****************************
+//*****************************************************************************
     //     On fait tourner la boucle tant que la fenêtre est ouverte
     for (unsigned short tick = 0; window.isOpen(); ++tick)
     {
@@ -104,26 +116,35 @@ void GameTurn(){
         window.clearScreen();
 
         window << maze; //afficher le labyrinthe à chaque fois fait bugger le programme
-        unsigned NbGum;
+
+
+        //*****************************************************************************
+        //****************************     Victoire     *******************************
+        //*****************************************************************************
         if (WinRound == true) {
             this_thread::sleep_for(chrono::milliseconds(500000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
             ChangementNiveau(PacMan, RedGhost, OrangeGhost, PinkGhost, BlueGhost, posMap, gumGrid);
             WinRound = false;
         }
+
+        //*****************************************************************************
+        //******************************     Mort     *********************************
+        //*****************************************************************************
         if (Dead)
-                {
-                    window << nsGui::Sprite (PacMan.SpriteMap["Dead"][dieTickAnimation % PacMan.SpriteMap["Dead"].size()], nsGraphics::Vec2D(24*PacMan.Pos.first-12,24*PacMan.Pos.second-12));
-                    if (dieTickAnimation % PacMan.SpriteMap["Dead"].size() == PacMan.SpriteMap["Dead"].size()-1)
-                    {
-                        audioEngine.playSoundFromBuffer("../sae102/res/audio/pacman_death.wav");
-                        this_thread::sleep_for(chrono::milliseconds(250000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
-                        reinitLevel(PacMan, RedGhost, PinkGhost, OrangeGhost, BlueGhost, posMap);
-                        Dead = false;
-                        dieTickAnimation = 0;
-                        --vies;
-                    }
-                    else
-                        ++dieTickAnimation;
+        {
+            window << nsGui::Sprite (PacMan.SpriteMap["Dead"][dieTickAnimation % PacMan.SpriteMap["Dead"].size()], nsGraphics::Vec2D(24*PacMan.Pos.first-12,24*PacMan.Pos.second-12));
+            if (dieTickAnimation % PacMan.SpriteMap["Dead"].size() == PacMan.SpriteMap["Dead"].size()-1)
+            {
+                audioEngine.playSoundFromBuffer("../sae102/res/audio/pacman_death.wav");
+                this_thread::sleep_for(chrono::milliseconds(250000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
+                reinitLevel(PacMan, RedGhost, PinkGhost, OrangeGhost, BlueGhost, posMap);
+                Dead = false;
+                dieTickAnimation = 0;
+                --vies;
+            }
+            else{
+                ++dieTickAnimation;
+            }
         }
         else {
             showGumInMaze(window,gumGrid,NbGum);
@@ -136,13 +157,11 @@ void GameTurn(){
                     tick2 = 150;
                 }
             }
-            if (vies == 0){
+            if (vies == 0){ //fin de partie
                  affichageNiveauGagne(window);
                  this_thread::sleep_for(chrono::milliseconds(50000 / FPS_LIMIT) - chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - start));
                  return;
-
             }
-
 
             gumEating(audioEngine, PacMan, gumGrid, NbGum, score);
 
@@ -202,7 +221,11 @@ void GameTurn(){
                     OrangeGhost.Pos.second = 11;
                 }
             }
-            if (tick%2 == 0){
+
+            //*****************************************************************************
+            //******************************     Ghost     ********************************
+            //*****************************************************************************
+            if (tick%2 == 0){   //Bouge un tour sur deux pour ralentir et facilité le jeu
                 RedGhostMove(RedGhost,PacMan,gridInfo.first);
                 PinkGhostMove(PinkGhost,PacMan,gridInfo.first);
                 OrangeGhostMove(OrangeGhost,PacMan,gridInfo.first);
@@ -214,19 +237,25 @@ void GameTurn(){
                 GhostMovement(entityGrid,PinkGhost, tick);
             }
 
-            window << initSprite(PacMan, entityGrid, tick, tick2);
+            //*****************************************************************************
+            //******************     met les visuels des entitées     *********************
+            //*****************************************************************************
             window << initSprite(RedGhost, entityGrid, tick, tick2);
             window << initSprite(BlueGhost, entityGrid, tick, tick2);
             window << initSprite(OrangeGhost, entityGrid, tick, tick2);
             window << initSprite(PinkGhost, entityGrid, tick, tick2);
+            window << initSprite(PacMan, entityGrid, tick, tick2);
 
             affichageScore(window, score);
             affichageVies(PacMan.SpriteMap, window, vies);
             affichageNiveau(window, niveau);
         }
-        if (tick == 65535)
+
+
+        if (tick == 65535) // si tick atteint le mex remettre a 0
             tick = 0;
-        if (NbGum == 0){
+
+        if (NbGum == 0){ // victoire -> niveau suivant
             affichageNiveauGagne(window);
             niveau +=1;
             tick = 0;

@@ -28,13 +28,13 @@ bool checkCollision (CMat Grid, unsigned X, unsigned Y)
 void pacManDirection(MinGL & window, CMat & entityGrid, Entity & PacMan)
 {
     if (PacMan.Pos.first == 0 || PacMan.Pos.first == entityGrid.size()-3) return;
-    if (window.isPressed({'z', false}) && checkCollision(entityGrid,PacMan.Pos.first,PacMan.Pos.second-1))
+    if ((window.isPressed({'z', false}) || window.isPressed({'Z', false})) && checkCollision(entityGrid,PacMan.Pos.first,PacMan.Pos.second-1))
         PacMan.viewdirection = "Top";
-    if (window.isPressed({'s', false}) && checkCollision(entityGrid,PacMan.Pos.first,PacMan.Pos.second+1))
+    if ((window.isPressed({'s', false}) || window.isPressed({'S', false})) && checkCollision(entityGrid,PacMan.Pos.first,PacMan.Pos.second+1))
         PacMan.viewdirection = "Bottom";
-    if (window.isPressed({'q', false}) && checkCollision(entityGrid,PacMan.Pos.first-1,PacMan.Pos.second))
+    if ((window.isPressed({'q', false}) || window.isPressed({'Q', false})) && checkCollision(entityGrid,PacMan.Pos.first-1,PacMan.Pos.second))
         PacMan.viewdirection = "Left";
-    if (window.isPressed({'d', false}) && checkCollision(entityGrid,PacMan.Pos.first+1,PacMan.Pos.second))
+    if ((window.isPressed({'d', false}) || window.isPressed({'D', false})) && checkCollision(entityGrid,PacMan.Pos.first+1,PacMan.Pos.second))
         PacMan.viewdirection = "Right";
 }
 void GhostMovement(CMat & entityGrid, Entity & Ghost,short unsigned & tick)

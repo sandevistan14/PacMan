@@ -5,6 +5,7 @@ CONFIG -= qt
 
 SOURCES += \
         Display/Display.cpp \
+        GameTurn/InitGameTurn.cpp \
         Ghost/GhostMove.cpp \
         Ghost/PhaseGhost.cpp \
         Ghost/iaghost.cpp \
@@ -20,6 +21,7 @@ DISTFILES += \
 
 HEADERS += \
     DisplayH/Display.h \
+    GameTurnH/InitGameTurn.h \
     GhostH/GhostMove.h \
     GhostH/PhaseGhost.h \
     GhostH/iaghost.h \
